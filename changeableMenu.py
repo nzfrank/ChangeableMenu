@@ -118,7 +118,7 @@ class MenuLayer(QWidget):
         df = pandas.read_excel(SOURCE_FILE, sheet_name=sheet)
         titles = [i for i in df.columns]
         self.columnSize = df.shape[1]
-        self.rowSize = df.shape[0]+1
+        self.rowSize = df.shape[0]
         myTable.setColumnCount(self.columnSize)
         myTable.setRowCount(2)
         for column, title in enumerate(titles):
