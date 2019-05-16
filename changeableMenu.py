@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QMainWindow, QStackedWidget, QLabel, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPushButton, QMainWindow, QStackedWidget, QLabel, QTableWidget, QTableWidgetItem, QComboBox
 from PyQt5.QtCore import QSize
-import pandas
 from random import randrange
 from timeit import default_timer as timer
+
+import pandas
 
 
 INTERVAL = 3
@@ -50,7 +51,7 @@ class ChangeableMenu(QMainWindow):
         self.startTime = timer()
 
     def found_button_event(self):
-        senderText = self.sender().currentItem().text()
+        senderText = self.sender().currentText()
         if senderText == self.targetItem:
             self.endTime = timer()
             self.time_total = round(self.endTime - self.startTime, 1)
@@ -70,16 +71,17 @@ class ChangeableMenu(QMainWindow):
                                               'Target': self.targetItem,
                                               'Time': self.time_total,
                                               'Count': self.count}, ignore_index=True)
-            df_existing.to_excel(writer, sheet_name=RESULTS_SHEET)
+            df_existing.to_excel(writer, sheet_name=RESULTS_SHEET, index=False)
         else:
             df_init = pandas.DataFrame(columns=['Menu', 'Target', 'Time', 'Count'])
             df_init = df_init.append({'Menu': self.currentLayer,
                                       'Target': self.targetItem,
                                       'Time': self.time_total,
                                       'Count': self.count}, ignore_index=True)
-            df_init.to_excel(writer, sheet_name=RESULTS_SHEET)
+            df_init.to_excel(writer, sheet_name=RESULTS_SHEET, index=False)
 
         writer.save()
+
 
 class MainLayer(QWidget):
 
@@ -118,15 +120,16 @@ class MenuLayer(QWidget):
         self.columnSize = df.shape[1]
         self.rowSize = df.shape[0]+1
         myTable.setColumnCount(self.columnSize)
-        myTable.setRowCount(self.rowSize)
+        myTable.setRowCount(2)
         for column, title in enumerate(titles):
             item = QTableWidgetItem(title)
             myTable.setItem(0, column, item)
-            for row, value in enumerate(df[title]):
-                item = QTableWidgetItem(value)
-                myTable.setItem(row+1, column, item)
-
-        myTable.itemClicked.connect(event)
+            myCombo = QComboBox()
+            myCombo.addItem("N/A")
+            myCombo.addItems(df[title])
+            myCombo.setCurrentText("N/A")
+            myCombo.currentTextChanged.connect(event)
+            myTable.setCellWidget(1, column, myCombo)
 
         x, y = self.random_coordinates()
         self.targetItem = df[titles[x]][y]
